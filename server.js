@@ -9,7 +9,7 @@ const tagRoutes = require('./routes/tagRoutes');
 const postTagRoutes = require('./routes/postTagRoutes');
 
 const app = express();
-const PORT = process.env.PORT || 3306;
+const PORT = process.env.PORT || 3000;
 
 app.use(bodyParser.json());
 
