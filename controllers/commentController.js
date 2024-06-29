@@ -16,3 +16,21 @@ exports.createComment = (req, res) => {
         res.json({ id: results.insertId, postID, userID, commentContent });
     });
 };
+
+// View all comments on a blog post with commenters' names
+exports.getCommentsForPost = (req, res) => {
+    const { postId } = req.params;
+    const query = `
+        SELECT c.commentID, c.commentContent, u.userName AS commenter, c.commentCreatedAt
+        FROM tblComment c
+        JOIN tblUser u ON c.userID = u.userID
+        WHERE c.postID = ?
+    `;
+    db.query(query, [postId], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
