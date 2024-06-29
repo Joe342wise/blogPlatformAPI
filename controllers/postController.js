@@ -93,3 +93,91 @@ exports.deletePost = (req, res) => {
         res.json({ message: 'Post deleted successfully' });
     });
 };
+
+// Retrieve a list of all blog posts with their authors and categories
+exports.getAllPostsWithAuthorsAndCategories = (req, res) => {
+    const query = `
+        SELECT p.postID, p.postTitle, p.postContent, u.userName AS author, c.catName AS category, p.postCreatedAt
+        FROM tblPost p
+        JOIN tblUser u ON p.userID = u.userID
+        JOIN tblCategory c ON p.catID = c.catID
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
+
+// View all comments on a blog post with commenters' names
+exports.getCommentsForPost = (req, res) => {
+    const { id } = req.params;
+    const query = `
+        SELECT c.commentID, c.commentContent, u.userName AS commenter, c.commentCreatedAt
+        FROM tblComment c
+        JOIN tblUser u ON c.userID = u.userID
+        WHERE c.postID = ?
+    `;
+    db.query(query, [id], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
+
+// View all blog posts with their tags
+exports.getAllPostsWithTags = (req, res) => {
+    const query = `
+        SELECT p.postID, p.postTitle, t.tagName
+        FROM tblPost p
+        JOIN tblPostTag pt ON p.postID = pt.postID
+        JOIN tblTag t ON pt.tagID = t.tagID
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
+
+// Search blog posts by keyword in title or content
+exports.searchPostsByKeyword = (req, res) => {
+    const { keyword } = req.query;
+    const query = `
+        SELECT p.postID, p.postTitle, p.postContent, u.userName AS author, c.catName AS category, p.postCreatedAt
+        FROM tblPost p
+        JOIN tblUser u ON p.userID = u.userID
+        JOIN tblCategory c ON p.catID = c.catID
+        WHERE p.postTitle LIKE ? OR p.postContent LIKE ?
+    `;
+    db.query(query, [`%${keyword}%`, `%${keyword}%`], (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
+
+// Count the number of posts by each user
+exports.countPostsByUser = (req, res) => {
+    const query = `
+        SELECT u.userName, COUNT(p.postID) AS postCount
+        FROM tblUser u
+        JOIN tblPost p ON u.userID = p.userID
+        GROUP BY u.userName
+    `;
+    db.query(query, (err, results) => {
+        if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+        }
+        res.json(results);
+    });
+};
